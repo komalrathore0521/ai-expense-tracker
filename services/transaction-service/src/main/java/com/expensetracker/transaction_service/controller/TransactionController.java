@@ -2,10 +2,11 @@ package com.expensetracker.transaction_service.controller;
 
 import com.expensetracker.transaction_service.dto.CreateTransactionDto;
 import com.expensetracker.transaction_service.model.Transaction;
+import com.expensetracker.transaction_service.model.User;
+import com.expensetracker.transaction_service.repository.UserRepository;
 import com.expensetracker.transaction_service.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,10 +21,11 @@ public class TransactionController {
 
     private static final Logger log = LoggerFactory.getLogger(TransactionController.class);
     private final TransactionService transactionService;
+    private final UserRepository userRepository; // <<< NEW DEPENDENCY
 
-    @Autowired
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, UserRepository userRepository) {
         this.transactionService = transactionService;
+        this.userRepository = userRepository; // <<< INJECTED HERE
     }
 
     @GetMapping("/status")
@@ -33,21 +35,20 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<?> createTransaction(@RequestBody CreateTransactionDto createTransactionDto) {
-        // Get the authentication object from the security context, which was set by the JwtAuthFilter
+        // Get the authentication object, which contains the user's details from the JWT
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // The 'name' of the principal is the user's email, which we extracted from the token
         String userEmail = authentication.getName();
-        log.info("Creating transaction for user: {}", userEmail);
-
-        // --- IMPORTANT LIMITATION FOR NOW ---
-        // At this point, the transaction-service only knows the user's email. It doesn't know their unique ID.
-        // The proper solution is for the user-service to publish user data to a Kafka topic that this service can read.
-        // We will implement that inter-service communication later.
-        // For now, we will use a placeholder ID to make the endpoint functional.
-        Long userId = 1L; // FAKE USER ID - TO BE REPLACED LATER
+        log.info("Received request to create transaction for user email: {}", userEmail);
 
         try {
+            // --- NEW: Look up the real user ID from the local replica ---
+            User user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalStateException("User replica not found for email: " + userEmail + ". The user may not have been synchronized via Kafka yet."));
+
+            Long userId = user.getId();
+            log.info("Found real user ID: {} for email: {}", userId, userEmail);
+            // --- END NEW ---
+
             Transaction newTransaction = transactionService.createTransaction(createTransactionDto, userId);
             return new ResponseEntity<>(newTransaction, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -56,4 +57,3 @@ public class TransactionController {
         }
     }
 }
-
