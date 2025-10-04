@@ -16,9 +16,10 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    public Transaction createTransaction(CreateTransactionDto createTransactionDto) {
+    // This method now accepts the userId from the controller
+    public Transaction createTransaction(CreateTransactionDto createTransactionDto, Long userId) {
         Transaction transaction = new Transaction();
-        transaction.setUserId(createTransactionDto.getUserId());
+        transaction.setUserId(userId); // Set from the validated token context
         transaction.setType(createTransactionDto.getType());
         transaction.setAmount(createTransactionDto.getAmount());
         transaction.setCategory(createTransactionDto.getCategory());

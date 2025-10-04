@@ -1,31 +1,45 @@
-version: '3.8'
-
 services:
   user-service:
     build:
       context: ./services/user-service
-      dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    # This tells Docker Compose to load variables from the .env file
-    # for this specific service.
     env_file:
       - .env
     networks:
       - expense-tracker-network
+    depends_on:
+      - kafka
 
   transaction-service:
     build:
       context: ./services/transaction-service
-      dockerfile: Dockerfile
     ports:
       - "8081:8081"
-    # The transaction-service can also use the same .env file
-    # if it needs access to the same variables in the future.
     env_file:
       - .env
     networks:
       - expense-tracker-network
+    depends_on:
+      - kafka
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    networks:
+      - expense-tracker-network
+    env_file:
+      - .env
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    networks:
+      - expense-tracker-network
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    env_file:
+      - .env
 
 networks:
   expense-tracker-network:
