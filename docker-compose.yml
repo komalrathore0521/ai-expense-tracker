@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  user-service:
+    build:
+      context: ./services/user-service
+    ports:
+      - "8080:8080"
+    environment:
+      # Add environment variables here if needed, e.g., database connections
+      - SPRING_PROFILES_ACTIVE=dev
+    networks:
+      - expense-tracker-net
+
+  # Add other services like a database here later
+  # postgres-db:
+  #   image: postgres:14-alpine
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=admin
+  #     - POSTGRES_PASSWORD=secret
+  #     - POSTGRES_DB=user_db
+  #   networks:
+  #     - expense-tracker-net
+
+networks:
+  expense-tracker-net:
+    driver: bridge

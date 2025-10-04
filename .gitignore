@@ -1,0 +1,36 @@
+#Compiled Java files
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+#Log files
+*.log
+
+#IDE files
+.idea/
+*.iml
+*.iws
+.project
+.classpath
+.settings/
+
+#Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+#Build folders
+build/
+dist/
+
+#Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+#Mac files
+.DS_Store
