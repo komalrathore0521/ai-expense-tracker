@@ -22,9 +22,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=neondb_owner
       - SPRING_DATASOURCE_PASSWORD=npg_idLfOP1Y5sna
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-
-    networks:
-      # Connects this service to a shared network
+      - JWT_SECRET_KEY=dGhpcy1pcy1teS1zdXBlci1zZWN1cmUta2V5LWZvci10aGUtYXBwLTEyMzQ1
       - expense-tracker-net
 
 # Defines the network that allows containers to communicate with each other
